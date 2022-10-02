@@ -1,6 +1,8 @@
 package com.github.santiautomation.cookbuddy.controllers;
 
+import com.github.santiautomation.cookbuddy.dto.IngredientDTO;
 import com.github.santiautomation.cookbuddy.dto.RecipeDTO;
+import com.github.santiautomation.cookbuddy.dto.RecipeFilter;
 import com.github.santiautomation.cookbuddy.services.RecipeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,4 +48,8 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.addIngredient(recipeId, ingredientId));
     }
 
+    @PostMapping("/filter")
+    public ResponseEntity<List<RecipeDTO>> getRecipesByIngredients(@RequestBody RecipeFilter recipeFilter) {
+        return ResponseEntity.ok(recipeService.getRecipesByIngredientList(recipeFilter));
+    }
 }

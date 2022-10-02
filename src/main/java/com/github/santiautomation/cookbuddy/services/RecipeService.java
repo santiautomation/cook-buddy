@@ -4,7 +4,9 @@ import com.github.santiautomation.cookbuddy.domain.Ingredient;
 import com.github.santiautomation.cookbuddy.domain.Recipe;
 import com.github.santiautomation.cookbuddy.domain.RecipeIngredient;
 import com.github.santiautomation.cookbuddy.domain.RecipeIngredientId;
+import com.github.santiautomation.cookbuddy.dto.IngredientDTO;
 import com.github.santiautomation.cookbuddy.dto.RecipeDTO;
+import com.github.santiautomation.cookbuddy.dto.RecipeFilter;
 import com.github.santiautomation.cookbuddy.mappers.RecipeMapper;
 import com.github.santiautomation.cookbuddy.repository.IngredientRepository;
 import com.github.santiautomation.cookbuddy.repository.RecipeIngredientRepository;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RecipeService {
@@ -97,5 +100,34 @@ public class RecipeService {
         recipeIngredientRepository.save(ri);
 
         return "Ingredient added successfully";
+    }
+
+    public List<RecipeDTO> getRecipesByIngredientList(RecipeFilter recipeFilter) {
+        LOG.info("getRecipesByIngredientList request  with List of Ingredients {}", recipeFilter);
+
+        List<Long> ingredientIds = recipeFilter.getIngredients()
+                .stream()
+                .map(i -> i.getId()).collect(Collectors.toList());
+
+        List<Recipe> recipes = recipeRepository.findByIngredients(ingredientIds);
+
+        LOG.info("Result before Category Filter: " + recipes);
+
+        if (recipeFilter.getSubcategory() != null) {
+            recipes = recipes
+                    .stream()
+                    .filter(r -> r.getSubcategory().getSubcategoryId()
+                            .equals(recipeFilter.getSubcategory().getSubcategoryId()))
+                    .collect(Collectors.toList());
+            LOG.info("Result after Category Filter: " + recipes);
+        }
+
+        List<RecipeDTO> dtos = new ArrayList<>();
+
+        for (Recipe r: recipes) {
+            dtos.add(mapper.recipeToRecipeDTO(r));
+        }
+
+        return  dtos;
     }
 }
